@@ -1,0 +1,106 @@
+---
+title: "proxReg"
+author: "Kai Wang"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Table of Contents
+* [Figure 2,5: Scatter plot of proxReg vs Poly-Enrich](#figure-2-and-5)
+* [Figure 3: Heatmap for 90 proxReg data](#figure-3)
+* [Figure 4: Scatter plot of proxReg promoter vs enhancer](#figure-4)
+
+## Figure 2 and 5 
+Generate scatter plot of ProxReg results with Poly-Enrich results. Example input file is "Gm12878.Six5.txt", this file contains the FDR and p-values from ProxReg and Poly-Enrich. Users can check the example file for more details.
+```{r eval = F}
+library(ggplot2)
+data   <- read.csv("Gm12878.Six5.txt", header = T, sep = "\t")
+data$x <- sign(data$polyenrich.Effect)*-log10(data$polyenrich.pvalue)
+data$promoter.y <- -log10(abs(data$promoter.pvalue))*sign(data$promoter.Effect)
+data$enhancer.y <- -log10(abs(data$enhancer.pvalue))*sign(data$enhancer.Effect)
+
+#plot promoter results
+ggplot(data) +
+    geom_point(aes(x = x, y = promoter.y)) +
+    theme_classic() +
+    geom_vline(xintercept = 0) +
+    geom_hline(yintercept = 0) +
+    theme(legend.position="none",plot.title = element_text(hjust = 0.5,size = 12),axis.text=element_text(size=10),
+          axis.title=element_text(size=10,face="bold")) +
+    xlab("Signed -log10 GSE Pvalue") +
+    ylab("Signed -log10 ProxReg Pvalue") +
+    ggtitle("Example promoter results")
+
+#plot enhancer results
+ggplot(data) +
+    geom_point(aes(x = x, y = enhancer.y)) +
+    theme_classic() +
+    geom_vline(xintercept = 0) +
+    geom_hline(yintercept = 0) +
+    theme(legend.position="none",plot.title = element_text(hjust = 0.5,size = 12),axis.text=element_text(size=10),
+          axis.title=element_text(size=10,face="bold")) +
+    xlab("Signed -log10 GSE Pvalue") +
+    ylab("Signed -log10 ProxReg Pvalue") +
+    ggtitle("Example enhancer results")
+```
+
+
+## Figure 3
+Heat map for all 90 data sets. The count numbers of points in each quadrant were calculated by in-house python script.  
+```{r eval = F}
+library(RColorBrewer)
+library(gplots)
+#read counts data
+dat<-read.csv("heat.map.data.csv",header = TRUE,
+              row.names=1)
+datlog<-log2(dat+2)
+d2<-dist(datlog,method = "euclidean",diag = FALSE, upper = TRUE)
+c2 <- hclust(d2, method = "ward.D2", members = NULL)
+
+par(cex.main=0.75)
+my_palette <- colorRampPalette(c("blue","white","red"))(n = 25)
+dm<-as.matrix(datlog)
+heatmap.2(dm, 
+          col=my_palette, 
+          key = TRUE,
+          #lhei=c(2,4), lwid=c(2,3.5), keysize=0.75, key.par = list(cex=0.5),
+          Rowv=as.dendrogram(c2),
+          Colv=FALSE, 
+          trace="none",
+          key.xlab = "log(count+2)",
+          density.info = c("none"),#symkey = FALSE,cexRow = 0.8, cexCol = 1.0,
+          #lhei=c(0.3,8),
+          margins = c(3,8))
+```
+
+## Figure 4
+Generate scatter plot of ProxReg promoter results and enhancer results. 
+```{r eval = F}
+library(ggplot2)
+#read data
+data   <- read.csv("Gm12878.Six5.txt", header = T, sep = "\t")
+data$promoter <- -log10(abs(data$promoter.pvalue))*sign(data$promoter.Effect)
+data$enhancer <- -log10(abs(data$enhancer.pvalue))*sign(data$enhancer.Effect)
+
+# 
+data["P.value.fdr"]<-p.adjust(data$polyenrich.pvalue, method = "BH")
+data$group<-1
+data$group[abs(data$P.value.fdr)>=0.05]<-2
+
+#generate scatter plot of ProxReg promoter results and enhancer results
+ggplot(data)+
+  geom_point(data=subset(data,group==1),aes(x=promoter,y=enhancer),color=c("black")) +
+  geom_smooth(data=subset(data,group==1),aes(x=promoter,y=enhancer),method=lm) +
+  theme_classic() +
+  geom_vline(xintercept = 0) +
+  geom_hline(yintercept = 0) +
+  theme(legend.position="none",plot.title = element_text(hjust = 0.5,size = 12),axis.text=element_text(size=10),
+        axis.title=element_text(size=10,face="bold")) +
+  xlab("Signed -log10 ProxReg Pvalue (Promoter)") +
+  ylab("Signed -log10 ProxReg Pvalue (Enhancer)") +
+  ggtitle("Example figure of promoter/enhancer scatter plot")
+
+```
