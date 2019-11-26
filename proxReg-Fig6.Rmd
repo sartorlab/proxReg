@@ -1,0 +1,112 @@
+---
+title: "proxReg-Fig6"
+author: "Tingting Qin"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Fig 6
+
+Input files: Gm12878.Nrsf.summary.txt, H1hesc.Nrsf.summary.txt, and K562.Nrsf.summary.txt
+referred R script: reduceGO.R
+
+read in enriched GO terms of example TFs
+
+```{r eval = F}
+
+############ Fig 6 ####################################################
+
+### Input files: Gm12878.Nrsf.summary.txt, H1hesc.Nrsf.summary.txt, and K562.Nrsf.summary.txt ###
+### referred R script: reduceGO.R
+
+### read in enriched GO terms of example TFs
+
+proxReg.rs <- sapply(system("ls *.summary.txt",intern=T), function(x){read.table(x, header=T,sep="\t",stringsAsFactors=F)}, simplify=F)
+
+names(proxReg.rs) <- gsub(".summary.txt","",names(proxReg.rs))
+
+### select enriched GO terms by PE
+
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(reshape2)
+library(tidyr)
+
+proxReg.rs.sigGO <- lapply(proxReg.rs, function(x){subset(x, Number.of.Genes < 1000 & enrich.status == "enriched" & enrich.fdr < 0.05)})
+
+### add signed p values
+
+proxReg.rs.sigGO <- lapply(proxReg.rs.sigGO,function(x){x$signed.promoter.NegLog10pvalue = ifelse(x$promoter.status=="enriched",1,-1)*(-log10(x$promoter.pvalue)); x$signed.enhancer.NegLog10pvalue = ifelse(x$enhancer.status=="closer",1,-1)*(-log10(x$enhancer.pvalue)); x})
+
+### reduce redundant GOs
+
+source("./reduceGO.R")
+
+### NOTE: VERY IMPORTANT that the input godf is already ordered by some value, like FDR, rank, etc
+### closer to promoter; rank GO based on promoter.pvalue
+
+proxReg.closerPromoter <- lapply(proxReg.rs.sigGO, function(x){tmp <- subset(x,(promoter.fdr < 0.05 & promoter.status == "enriched")) %>% arrange(promoter.pvalue) %>% dplyr::rename(N.genes= Number.of.Genes); if(nrow(tmp) > 5){reduce_GO(tmp)}else{tmp}})
+
+### closer to enhancer; rank GO based on enhancer.pvalue
+
+proxReg.closerEnhancer <- lapply(proxReg.rs.sigGO, function(x){tmp <- subset(x,(enhancer.fdr < 0.05 & enhancer.status == "closer")) %>% arrange(enhancer.pvalue) %>% dplyr::rename(N.genes= Number.of.Genes); if(nrow(tmp) > 5){reduce_GO(tmp)}else{tmp}})
+
+### combine results
+
+mergedGOs <- mapply(function(x,y){rbind(dplyr::select(x,c(Geneset.ID,Description,N.genes,promoter.status:signed.enhancer.NegLog10pvalue)),dplyr::select(y, c(Geneset.ID,Description,N.genes,promoter.status:signed.enhancer.NegLog10pvalue)))},proxReg.closerPromoter,proxReg.closerEnhancer, SIMPLIFY=F)
+
+### bubble plots of the ranked GOs
+
+pdf('bubbleplot_reducedSigEnrichGO_closerProm_closerEnh.pdf', colormodel="cmyk", useDingbats=FALSE, width=11)
+
+mapply(function(Data, TF){
+	Data$promoter.status <- ifelse(Data$promoter.status=="depleted","farther","closer")
+
+Data <- dplyr::select(Data,c(Description, N.genes, promoter.status, signed.promoter.NegLog10pvalue, enhancer.status, signed.enhancer.NegLog10pvalue))
+	Data.long <- Data %>% tidyr::gather("type","NegLog10pvalue",c(4,6))
+
+Data.long$type <- gsub("signed.|.NegLog.*","",Data.long$type)
+
+ggplot(Data.long, aes(x=type, y= reorder(Description, NegLog10pvalue), color=NegLog10pvalue,size=N.genes)) +
+geom_point() +
+theme_bw() +
+labs(title=paste0("Enriched GO terms"," (",TF,")")) +
+theme(plot.title=element_text(size=10,face="bold"), axis.title.y=element_blank(), axis.text.y=element_text(size=12, color="black"), axis.text.x = element_text(size=12, angle=45,hjust=1, color="black"), strip.text.x=element_text(size=10,face= "bold"), legend.title=element_text(size=10),legend.text=element_text(size=10), plot.margin=unit(c(1,4,1,4),"cm"), panel.border=element_rect(colour="black", fill=NA, size=1)) + scale_colour_gradient(low="blue", high="red")
+},
+mergedGOs, names(mergedGOs), SIMPLIFY=F)
+
+dev.off()
+
+##############################################################
+
+### bar plots  (percent of sig. GO terms sig. closer to enhancer or promoters)
+
+proxReg.rs.sigGO.summary <- do.call(rbind,lapply(proxReg.rs.sigGO,function(x){data.frame(sig.closerPromoter.num=nrow(subset(x,promoter.fdr < 0.05 & promoter.status=="enriched")),sig.closerEnhancer.num=nrow(subset(x,enhancer.fdr < 0.05 & enhancer.status=="closer")),total.num=nrow(x),stringsAsFactors=F)}))
+
+proxReg.rs.sigGO.summary$nonSigProxReg.num <- proxReg.rs.sigGO.summary$total.num - proxReg.rs.sigGO.summary$sig.closerPromoter.num - proxReg.rs.sigGO.summary$sig.closerEnhancer.num
+
+proxReg.rs.sigGO.summary <- proxReg.rs.sigGO.summary %>% mutate(group=rownames(proxReg.rs.sigGO.summary),sig.closerPromoter.perc=sig.closerPromoter.num/total.num*100,sig.closerEnhancer.perc=sig.closerEnhancer.num/total.num*100, nonSig.perc=nonSigProxReg.num/total.num*100)
+
+proxReg.rs.sigGO.summary.long <- proxReg.rs.sigGO.summary %>% gather("type","perc",c(6:8)) %>% mutate(cellType=gsub("\\..*","",group),TF=gsub(".*\\.","",group))
+
+library(ggplot2)
+
+pdf('barplot_sigGO_closerProm_closerEnh.pdf', colormodel="cmyk", useDingbats=FALSE)
+
+Data <- proxReg.rs.sigGO.summary.long %>% subset(TF=="Nrsf")
+
+Data$type <- recode(Data$type, sig.closerPromoter.perc="closer to promoters",sig.closerEnhancer.perc="closer to enrhancers",nonSig.perc="neither")
+
+Data <- Data %>% subset(TF=="Nrsf" & type!= "neither")
+
+ggplot(Data, aes(x=cellType, y= perc, fill=type)) + geom_bar(position="dodge", stat="identity") +
+theme_bw() + labs(y="percent of significantly enriched GO terms (%)")  + theme(axis.title.y= element_text(size=12, color="black"), axis.text.y=element_text(size=12, color="black"), axis.title.x=element_blank(), axis.text.x = element_text(size=12, angle=45,hjust=1, color="black"), legend.title=element_blank(),legend.text=element_text(size=12), legend.position="top",legend.direction="horizontal", plot.margin=unit(c(2,4,2,4),"cm"))+
+scale_fill_manual(values=c("dark red", "dark blue"))
+
+dev.off()
+
+```
