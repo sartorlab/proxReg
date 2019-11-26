@@ -1,0 +1,63 @@
+---
+title: "proxReg"
+author: "Christopher T. Lee"
+date: "11/13/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Running analysis
+
+Download Supplementary Table 1 and place in working directory before proceeding.
+```{r eval = F}
+newpeaklist = gdata::read.xls("./Supplementary Table 1.xlsx", stringsAsFactors=F)
+```
+
+##### To download all the ENCODE ChIP-seq experiments used, follow this procedure:
+```{r eval = F}
+write.table(sprintf("%s.gz",newpeaklist$Dataset), "./ENCODE_datasets.txt", quote=F, row.names = F, col.names = F)
+```
+
+Run the following on bash in your working directory to download the ChIP-seq experiments:
+
+Use `brew install wget` if wget is not already installed.
+```
+awk '{print "wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeAwgTfbsUniform/"$1}' <(cut -f 1 ENCODE_datasets.txt | grep narrowPeak) > tfbs_wget.sh
+
+bash tfbs_wget.sh
+```
+
+### Running proxReg on all data:
+```{r eval = F}
+library(chipenrich)
+for (peak in newpeaklist$V1) {
+	proxReg(peaks = peak, 
+			out_name = sprintf("./%s.promoter",peak),
+			out_path = getwd(),
+			genome = "hg19",	
+			reglocation = "tss",
+			qc_plots = T,
+			n_cores = 1
+			)
+}
+
+for (peak in newpeaklist$V1) {
+	proxReg(peaks = peak, 
+			out_name = sprintf("./%s.enhancer",peak),
+			out_path = getwd(),
+			genome = "hg19",
+			reglocation = "enhancer",
+			qc_plots = T,
+			n_cores = 1
+			)
+}
+```
+
+
+
+
+
