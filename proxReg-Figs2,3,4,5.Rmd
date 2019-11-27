@@ -104,3 +104,17 @@ ggplot(data)+
   ggtitle("Example figure of promoter/enhancer scatter plot")
 
 ```
+
+Obtain GO terms that our 35 TFs were assigned to in the human annotation Bioconductor package org.Hs.eg.db, we used Six5 as an example here.
+```{r}
+# we used the Entrezid to obtain the GO term that assigned to Six5
+library(AnnotationDbi)
+library(org.Hs.eg.db)
+TF2GO = AnnotationDbi::select(org.Hs.eg.db,
+                              keys = "147912",
+                              keytype = "ENTREZID",
+                              columns = c("SYMBOL", "GOALL", "ONTOLOGYALL"))
+dat<-TF2GO[TF2GO$ONTOLOGYALL=="BP",]
+dat$EVIDENCEALL<-NULL
+dat<-unique(dat)
+```
