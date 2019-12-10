@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 This is to run one iteration of randomizations.
 The different randomizations are "unif" or "bylength"
 
-10 trials was run for each peak file.
+10 trials was run for each peak file. Peakfile download instructions in `proxReg-Analysis.Rmd`
 ```{r eval = F}
 peak = "./wgEncodeAwgTfbsHaibGm12878Atf3Pcr1xUniPk.narrowPeak"
 results_randunif = proxReg(peaks = peak, 
@@ -32,13 +32,13 @@ results_randunif = proxReg(peaks = peak,
 ### Making SF1
 This makes the figure after aggregating all the data.
 ```{r eval = F}
-newpeaklist = gdata::read.xls("./Supplementary Table 1.xlsx", stringsAsFactors=F)
+newpeaklist = read.table("./datafiles/newpeaklist.txt", header=F, stringsAsFactors=F)
 n = 90
 thresh = 0.001
 rndmat = matrix(0,n,4)
 for (index in (1:n)) {
-	rnds = read.table(sprintf("./proxReg_rnd/rndsgene.%s.txt",newpeaklist$V1[index]), header=T)
-	rndse = read.table(sprintf("./proxReg_rnd/rndsenh5.%s.txt",newpeaklist$V1[index]), header=T)
+	rnds = read.table(sprintf("./datafiles/proxReg_rnd/rndsgene.%s.txt",newpeaklist$V1[index]), header=T)
+	rndse = read.table(sprintf("./datafiles/proxReg_rnd/rndsenh5.%s.txt",newpeaklist$V1[index]), header=T)
 	rndmat[index,1:2] = colSums(rnds < thresh)/nrow(rnds)
 	rndmat[index,3:4] = colSums(rndse < thresh)/nrow(rndse)
 
@@ -55,6 +55,7 @@ abline(v = 2.5, col = "grey", pch = "-")
 ## Supplementary Figure 2
 
 Artificially creates close peaks after randomizing 
+You need to download the package and load in the hidden functions for this block.
 ```{r eval = F}
 devtools::load_all("~/GitHub/chipenrich/") # Need the hidden functions
 gs_path = system.file('extdata','vignette_genesets.txt', package='chipenrich')
@@ -181,7 +182,8 @@ tss = ldef_list[['tss']]
 test_power = function(index, go_id, proppeaks, d0) {
 	print(index)
 	
-	peakobj = read_bed(sprintf("~/Desktop/RESEARCH/ENCODEpeaks/%s",newpeaklist$V1[index]))
+	## Need to change path to peaks
+	peakobj = read_bed(sprintf("~/Desktop/RESEARCH/ENCODEpeaks/%s",newpeaklist$V1[index])) 
 	message("Assigning peaks to genes with assign_peaks(...) ..")
 	assigned_peaks = assign_peaks(peakobj, ldef, tss)
 
@@ -248,9 +250,10 @@ prox_powers = apply(prox_power_array,c(1,2,3), function(x){mean(x[[1]]$P.value<0
 
 Preprocessed data is supplied on Github
 ```{r eval = F}
-prox_powers = readRDS("./prox_powers.rds")
+prox_powers = readRDS("./datafiles/prox_powers.rds")
 #Supplementary Figure 2
 plot(NULL,xlim = c(0,1), ylim = c(0,100), xlab = "% peaks added", ylab = "% significant", main = "Power")
+propadd = c(0.001,0.005,0.01)
 points(propadd*100, prox_powers[1,,1]*100 ,type ="b", col = "orange")
 points(propadd*100, prox_powers[1,,2]*100 ,type ="b", col = "red")
 points(propadd*100, prox_powers[1,,3]*100 ,type ="b", col = "red4")

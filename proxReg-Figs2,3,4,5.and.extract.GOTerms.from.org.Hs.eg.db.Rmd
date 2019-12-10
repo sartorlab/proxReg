@@ -4,6 +4,7 @@ author: "Kai Wang"
 output: html_document
 ---
 
+#SET WORK DIRECTORY FIRST
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -17,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Generate scatter plot of ProxReg results with Poly-Enrich results. Example input file is "Gm12878.Six5.txt", this file contains the FDR and p-values from ProxReg and Poly-Enrich. Users can check the example file for more details.
 ```{r eval = F}
 library(ggplot2)
-data   <- read.csv("Gm12878.Six5.txt", header = T, sep = "\t")
+data   <- read.csv("./datafiles/Gm12878.Six5.txt", header = T, sep = "\t")
 data$x <- sign(data$polyenrich.Effect)*-log10(data$polyenrich.pvalue)
 data$promoter.y <- -log10(abs(data$promoter.pvalue))*sign(data$promoter.Effect)
 data$enhancer.y <- -log10(abs(data$enhancer.pvalue))*sign(data$enhancer.Effect)
@@ -54,7 +55,7 @@ Heat map for all 90 data sets. The count numbers of points in each quadrant were
 library(RColorBrewer)
 library(gplots)
 #read counts data
-dat<-read.csv("heat.map.data.csv",header = TRUE,
+dat<-read.csv("./datafiles/heat.map.data.csv",header = TRUE,
               row.names=1)
 datlog<-log2(dat+2)
 d2<-dist(datlog,method = "euclidean",diag = FALSE, upper = TRUE)
@@ -81,7 +82,7 @@ Generate scatter plot of ProxReg promoter results and enhancer results.
 ```{r eval = F}
 library(ggplot2)
 #read data
-data   <- read.csv("Gm12878.Six5.txt", header = T, sep = "\t")
+data   <- read.csv("./datafiles/Gm12878.Six5.txt", header = T, sep = "\t")
 data$promoter <- -log10(abs(data$promoter.pvalue))*sign(data$promoter.Effect)
 data$enhancer <- -log10(abs(data$enhancer.pvalue))*sign(data$enhancer.Effect)
 

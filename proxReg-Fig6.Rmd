@@ -16,7 +16,6 @@ referred R script: reduceGO.R
 read in enriched GO terms of example TFs
 
 ```{r eval = F}
-
 ############ Fig 6 ####################################################
 
 ### Input files: Gm12878.Nrsf.summary.txt, H1hesc.Nrsf.summary.txt, and K562.Nrsf.summary.txt ###
@@ -24,7 +23,7 @@ read in enriched GO terms of example TFs
 
 ### read in enriched GO terms of example TFs
 
-proxReg.rs <- sapply(system("ls *.summary.txt",intern=T), function(x){read.table(x, header=T,sep="\t",stringsAsFactors=F)}, simplify=F)
+proxReg.rs <- sapply(system("ls ./datafiles/*.summary.txt",intern=T), function(x){read.table(x, header=T,sep="\t",stringsAsFactors=F)}, simplify=F)
 
 names(proxReg.rs) <- gsub(".summary.txt","",names(proxReg.rs))
 
