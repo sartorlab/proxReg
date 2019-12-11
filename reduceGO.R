@@ -1,7 +1,7 @@
 ### Lada's function
 
-source("https://bioconductor.org/biocLite.R")
-biocLite("GO.db")
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("GO.db")
 
 library(GO.db)
 
