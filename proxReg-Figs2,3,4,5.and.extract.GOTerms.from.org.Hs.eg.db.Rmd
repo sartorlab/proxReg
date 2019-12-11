@@ -4,7 +4,6 @@ author: "Kai Wang"
 output: html_document
 ---
 
-#SET WORK DIRECTORY FIRST
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
