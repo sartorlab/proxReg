@@ -1,1 +1,5 @@
 Reproducing analysis and figures in proxReg paper
+
+After cloning the repository, code blocks should be immediately runnable except for those 
+requiring larger download files. Blocks to generate figures only need the files in the 
+repository but may require extra packages.
