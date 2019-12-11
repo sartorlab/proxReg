@@ -20,6 +20,7 @@ This is to run one iteration of randomizations.
 The different randomizations are "unif" or "bylength"
 
 10 trials was run for each peak file. Peakfile download instructions in `proxReg-Analysis.Rmd`
+Do NOT run this unless you want to reproduce over 9000 hours of permutations.
 ```{r eval = F}
 peak = "./wgEncodeAwgTfbsHaibGm12878Atf3Pcr1xUniPk.narrowPeak"
 results_randunif = proxReg(peaks = peak, 
