@@ -267,3 +267,31 @@ legend("bottomright",legend = c("SmallGS, d0 = 100","SmallGS, d0 = 500","SmallGS
 	   col = c("orange","red","red4","violet","blue","blue4"))
 ```
 
+
+## Making SF3
+
+```{r}
+library(ggplot2)
+library(forcats)
+library(tidyr)
+dat<-read.csv("./datafiles/Data.for.sup.fig.3.txt",header = T,sep="\t")
+dat<-dat[,1:5]
+dat$p1<-dat$gene.peak.targetGO/dat$totalgenetargetGO*100
+dat$p2<-dat$gene.peak.notargetgene/dat$totalgenenotargetgene*100
+
+datt<-dat%>%gather(types,new,p1:p2)
+
+datt$legend[datt$types=="p1"]<-"Percentage of genes in TF assigned GO terms with peak in promoter"
+datt$legend[datt$types=="p2"]<-"Percentage of genes not in TF assigned GO terms with peak in promoter"
+
+ggplot(datt,aes(x=reorder(data, new, FUN = median),y=new,fill=legend)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  theme(axis.text.x = element_text(angle = 90,vjust = 0.5,hjust = 0.5)) +
+  xlab("Datasets") +
+  ylab("Percentage") +
+  guides(fill=guide_legend(title="")) +
+  theme(legend.position="top") 
+
+
+```
+
