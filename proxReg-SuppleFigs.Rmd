@@ -20,6 +20,7 @@ This is to run one iteration of randomizations.
 The different randomizations are "unif" or "bylength"
 
 10 trials was run for each peak file. Peakfile download instructions in `proxReg-Analysis.Rmd`
+Do NOT run this unless you want to reproduce over 9000 hours of permutations.
 ```{r eval = F}
 peak = "./wgEncodeAwgTfbsHaibGm12878Atf3Pcr1xUniPk.narrowPeak"
 results_randunif = proxReg(peaks = peak, 
@@ -56,6 +57,7 @@ abline(v = 2.5, col = "grey", pch = "-")
 
 Artificially creates close peaks after randomizing 
 You need to download the package and load in the hidden functions for this block.
+Do NOT run this unless you want to reproduce hours of simulations.
 ```{r eval = F}
 devtools::load_all("~/GitHub/chipenrich/") # Need the hidden functions
 gs_path = system.file('extdata','vignette_genesets.txt', package='chipenrich')
