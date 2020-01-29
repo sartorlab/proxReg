@@ -10,11 +10,45 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Table of Contents
 * [Supplementary Figure 1](#supplementary-figure-1)
-	+ [Making SF1](#making-sf1)
-* [Supplementary Figure 2](#supplementary-figure-2)
+* [Supplementary Figure 2](#supplementary-figure-3)
 	+ [Making SF2](#making-sf2)
+* [Supplementary Figure 2](#supplementary-figure-3)
+	+ [Making SF3](#making-sf3)
+
+
 
 ## Supplementary Figure 1
+
+```{r}
+library(ggplot2)
+library(forcats)
+library(tidyr)
+dat<-read.csv("./datafiles/Data.for.sup.fig.1.txt",header = T,sep="\t")
+dat<-dat[,1:5]
+dat$p1<-dat$gene.peak.targetGO/dat$totalgenetargetGO*100
+dat$p2<-dat$gene.peak.notargetgene/dat$totalgenenotargetgene*100
+
+datt<-dat%>%gather(types,new,p1:p2)
+
+datt$legend[datt$types=="p1"]<-"Percentage of genes in TF assigned GO terms with peak in promoter"
+datt$legend[datt$types=="p2"]<-"Percentage of genes not in TF assigned GO terms with peak in promoter"
+
+ggplot(datt,aes(x=reorder(data, new, FUN = median),y=new,fill=legend)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  theme(axis.text.x = element_text(angle = 90,vjust = 0.5,hjust = 0.5)) +
+  xlab("Datasets") +
+  ylab("Percentage") +
+  guides(fill=guide_legend(title="")) +
+  theme(legend.position="top") 
+
+
+```
+
+
+
+
+
+## Supplementary Figure 2
 
 This is to run one iteration of randomizations.
 The different randomizations are "unif" or "bylength"
@@ -30,7 +64,7 @@ results_randunif = proxReg(peaks = peak,
 
 ```
 
-### Making SF1
+### Making SF2
 This makes the figure after aggregating all the data.
 ```{r eval = F}
 newpeaklist = read.table("./datafiles/newpeaklist.txt", header=F, stringsAsFactors=F)
@@ -53,7 +87,7 @@ abline(v = 2.5, col = "grey", pch = "-")
 
 
 
-## Supplementary Figure 2
+## Supplementary Figure 3
 
 Artificially creates close peaks after randomizing 
 You need to download the package and load in the hidden functions for this block.
@@ -248,7 +282,7 @@ prox_powers = apply(prox_power_array,c(1,2,3), function(x){mean(x[[1]]$P.value<0
 ```
 
 
-### Making SF2
+### Making SF3
 
 Preprocessed data is supplied on Github
 ```{r eval = F}
@@ -267,33 +301,5 @@ points(propadd*100, prox_powers[2,,3]*100 ,type ="b", col = "blue4")
 legend("bottomright",legend = c("SmallGS, d0 = 100","SmallGS, d0 = 500","SmallGS, d0 = 1000",
 								"LargeGS, d0 = 100","LargeGS, d0 = 500","LargeGS, d0 = 1000"), pch =  15,
 	   col = c("orange","red","red4","violet","blue","blue4"))
-```
-
-
-## Making SF3
-
-```{r}
-library(ggplot2)
-library(forcats)
-library(tidyr)
-dat<-read.csv("./datafiles/Data.for.sup.fig.3.txt",header = T,sep="\t")
-dat<-dat[,1:5]
-dat$p1<-dat$gene.peak.targetGO/dat$totalgenetargetGO*100
-dat$p2<-dat$gene.peak.notargetgene/dat$totalgenenotargetgene*100
-
-datt<-dat%>%gather(types,new,p1:p2)
-
-datt$legend[datt$types=="p1"]<-"Percentage of genes in TF assigned GO terms with peak in promoter"
-datt$legend[datt$types=="p2"]<-"Percentage of genes not in TF assigned GO terms with peak in promoter"
-
-ggplot(datt,aes(x=reorder(data, new, FUN = median),y=new,fill=legend)) +
-  geom_bar(stat="identity", position=position_dodge()) +
-  theme(axis.text.x = element_text(angle = 90,vjust = 0.5,hjust = 0.5)) +
-  xlab("Datasets") +
-  ylab("Percentage") +
-  guides(fill=guide_legend(title="")) +
-  theme(legend.position="top") 
-
-
 ```
 
