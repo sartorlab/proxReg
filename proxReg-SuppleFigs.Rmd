@@ -16,8 +16,16 @@ knitr::opts_chunk$set(echo = TRUE)
 	+ [Making SF3](#making-sf3)
 
 
-
 ## Supplementary Figure 1
+
+ For regenerating supplementary figure 1, the python code titled `sup.fig.1.py` is provided. 
+ The input files for this script are: 
+ 1) ProxReg output files of all 90 Chip-Seq data, 
+ 2) GO term related information extracted from org.Hs.eg.db. 
+
+Data used in the aforementioned script are not included due to size limitations. Instructions for downloading and analyzing data is in `proxReg-Analysis.Rmd` to obtain (1).
+
+Once these two datasets were prepared,  users can run the python script to generate the data for supplementary figure 1. The file paths in the python script need to be changes, users can follow the comments in the script to change related paths. 
 
 ```{r}
 library(ggplot2)
@@ -43,9 +51,6 @@ ggplot(datt,aes(x=reorder(data, new, FUN = median),y=new,fill=legend)) +
 
 
 ```
-
-
-
 
 
 ## Supplementary Figure 2
