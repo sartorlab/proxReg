@@ -1,3 +1,16 @@
+'''
+For regenerating supplementary figure 1, 
+the python code titled “sup.fig.1.py” is provided. 
+The input files for this script are: 
+1) ProxReg output files of all 90 Chip-Seq data, 
+2) GO term related information extracted from org.Hs.eg.db. 
+Once these two datasets were prepared, 
+users can run the python script to generate the 
+data for supplementary figure 1. 
+The file paths in the python script need to be changes, 
+users can follow the comments in the script to change related paths. 
+'''
+
 import sys,os
 
 def get_go2gene():
